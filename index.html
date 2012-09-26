@@ -4,6 +4,7 @@
     <title>node.js - the good, the bad and the ugly</title>
     <link type='text/css' rel='stylesheet' href='css/main.css'>
     <link rel='stylesheet' href='css/theme/default.css' id='theme'>
+    <link rel='stylesheet' href='hl/styles/github.css'>
     <style>
     .smallish
     {
@@ -26,6 +27,20 @@
     {
       color: red;
     }
+    .term
+    {
+      padding: 10px;
+      background-color: #000;
+      color: #fff;
+    }
+    .green
+    {
+      color: green;
+    }
+    .purple
+    {
+      color: purple;
+    }
     </style>
   </head>
   <body>
@@ -33,8 +48,6 @@
       <div class='slides'>
         <section>
           <h1>node.js</h1>
-          <hr>
-          <h2>the good, the bad and the ugly</h2>
           <hr>
           <h3>bringing event-driven programming to the masses since 2009</h3>
           <span class='small'>
@@ -50,9 +63,12 @@
           <h2>about me</h2>
           <div class='small'>a.k.a. 'who is that guy?'</div>
           <ul>
-            <li class='fragment'>contributor since early 2010</li>
-            <li class='fragment'>committer since 2011</li>
-            <li class='fragment'>employed by Cloud9</li>
+            <li>contributor since early 2010</li>
+            <li>committer since 2011</li>
+            <li>
+              employed by Cloud9<br>
+              <img src='img/cloud9.png'>
+            </li>
           </ul>
         </section>
 
@@ -65,9 +81,14 @@
                 <a href='https://github.com/ry'>https://github.com/ry</a>
                 <a href='https://twitter.com/ryah'>https://twitter.com/ryah</a>
                 <br>
-                <img src='img/ryan_dahl.jpg'>
-                &larr; that guy
+                <img src='img/ryan_dahl.jpg' style='padding:0;margin:0'>
+                &larr; he's nicer than he looks
               </div>
+            </li>
+
+            <li class='fragment'>
+              v0.0.1 released in May 2009<br>
+              <div class='small'>(we're at v0.9.3 now)</div>
             </li>
 
             <li class='fragment'>
@@ -80,49 +101,76 @@
             </li>
 
             <li class='fragment'>
-              maintained by Isaac Schlueter<br>
-              <div class='small'>
-                <a href='https://github.com/isaacs'>
-                  https://github.com/isaacs
+              technology of the year 2012 according to InfoWorld<br>
+              <span class='small'>
+                <a href='http://joyent.com/company/press/node-js-selected-by-infoworld-for-2012-technology-of-the-year-award'>
+                  http://joyent.com/company/press/node-js-selected-by-infoworld-for-2012-technology-of-the-year-award
                 </a>
-                <a href='https://twitter.com/izs'>https://twitter.com/izs</a>
-                <br>
-                <img src='img/isaac_schlueter.jpg'>
-              </div>
-            </li>
-
-            <li class='fragment'>
-              and others like yours truly
+              </span>
             </li>
           </ul>
+        </section>
+
+        <section>
+          <h2>who uses node.js?</h2>
+          <table border='0' style='
+              margin-left:120px;
+              background-color:rgb(51,52,45)'>
+            <tr>
+              <td style='padding-left:50px; padding-right:30px;'>
+                <img style='border:0' src='img/users/ebay.png'><br>
+                <img style='border:0' src='img/users/iriscouch.png'><br>
+                <img style='border:0' src='img/users/linkedin.png'><br>
+              </td>
+              <td style='padding-left:30px; padding-right:50px;'>
+                <img style='border:0' src='img/users/microsoft.png'><br>
+                <img style='border:0' src='img/users/voxer.png'><br>
+                <img style='border:0' src='img/users/yahoo.png'><br>
+              </td>
+            </tr>
+            <tr>
+              <td style='padding-left:200px'>
+                <img style='border:0' src='img/users/cloud9.png'>
+              </td>
+            </tr>
+          </table>
+          <div class='small'>
+            <a href='https://github.com/joyent/node/wiki/Projects%2C-Applications%2C-and-Companies-Using-Node'>
+              https://github.com/joyent/node/wiki/Projects,-Applications,-and-Companies-Using-Node
+            </a>
+          </div>
         </section>
 
         <section>
           <h2>so what is node.js?</h2>
-          <div class='small'>(enumeration first, tedious details follow)</div>
+          <div class='small'>(enumeration first, details follow)</div>
           <ul>
-            <li class='fragment'>server-side javascript</li>
-            <li class='fragment'>non-blocking I/O</li>
-            <li class='fragment'>small core, rich module ecosystem</li>
+            <li>server-side javascript</li>
+            <li>non-blocking I/O</li>
+            <li>small core, rich module ecosystem</li>
           </ul>
-        </section>
-
-        <section>
-          <h1>what does that mean?</h1>
-          <div class='small'>(here come the tedious details)</div>
+          <br>
+          <br>
+          <div class='smallish' style='margin-left:300px;width:300px;'>
+            <pre>
+what        | lines of code
+===========================
+v8          |       663,742
+openssl     |       273,521
+libuv       |        43,833
+c-ares      |        21,092
+node (js)   |        19,051
+node (c++)  |        18,209
+            </pre>
+          </div>
         </section>
 
         <section>
           <h2>server-side javascript</h2>
           <ul>
-            <li class='fragment'>
-              incumbent languages are Java, C#, PHP, Python, Ruby, etc.
-            </li>
-            <li class='fragment'>
-              what does node.js bring to the table?<br>
-              <span class='fragment'>
-                one language to rule them all, server and client!
-              </span>
+            <li>
+              one language to rule them all
+              <span class='small'>(where all == server and client)</span>
             </li>
             <li class='fragment'>
               not really comparable with
@@ -138,7 +186,12 @@
         </section>
 
         <section>
-          <h2>non-blocking I/O</h2>
+          <h1>non-blocking I/O</h1>
+          <h3 class='fragment'>but first: blocking I/O</h3>
+        </section>
+
+        <section>
+          <h2>blocking I/O</h2>
           <pre><code class='language-javascript'>
 // make 100 requests to google.com
 for (var i = 0; i < 100; ++i) {
@@ -149,20 +202,18 @@ for (var i = 0; i < 100; ++i) {
   console.log(data);
 }
           </code></pre>
-          <strong>blocking example</strong>
           <div class='small warn'>pseudocode warning</div>
           <ul>
-            <li><span class='good'>pro:</span> straightforward, simple</li>
-            <li><span class='good'>pro:</span> easy to read</li>
+            <li><span class='good'>pro:</span> simple, readable</li>
             <li>
-              <span class='bad'>con:</span> inherently slow, never faster than
-              100 * min_request_time
+              <span class='bad'>con:</span> inherently slow, never
+              faster than <strong>100 * min_request_time</strong>
             </li>
           </ul>
         </section>
 
         <section>
-          <h2>non-blocking I/O</h2>
+          <h2>blocking I/O, pre-fork</h2>
           <pre><code class='language-javascript'>
 // make 100 requests to google.com
 for (var i = 0; i < 100; ++i) {
@@ -176,14 +227,21 @@ for (var i = 0; i < 100; ++i) {
   }
 }
           </code></pre>
-          <strong>blocking example, pre-fork</strong>
           <div class='small warn'>pseudocode warning</div>
           <ul>
-            <li><span class='good'>pro:</span> still pretty straightforward</li>
-            <li><span class='good'>pro:</span> almost as easy to read</li>
             <li>
-              <span class='bad'>con:</span> processes aren't cheap.<br>
-              100 isn't so bad but what about 1,000s or 10,000s?
+              <span class='good'>pro:</span>
+              still pretty simple and readable
+            </li>
+            <li>
+              <span class='good'>pro:</span>
+              fast, runs in <strong>max_request_time</strong>
+              <span class='small'>(plus OS overhead)</span>
+            </li>
+            <li>
+            <span class='bad'>con:</span>
+              OS processes aren't cheap
+              <span class='small'>(ditto for threads)</span>
             </li>
             <li>still, not entirely without merit</li>
           </ul>
@@ -205,10 +263,10 @@ for (var i = 0; i < 100; ++i) {
   });
 }
           </code></pre>
-          <strong>non-blocking example</strong>
           <ul>
             <li>
-              <span class='good'>pro:</span> fast, finishes in max_request_time
+              <span class='good'>pro:</span>
+              fast, finishes in <strong>max_request_time</strong>
             </li>
             <li>
               <span class='bad'>con:</span> lots of callbacks
@@ -217,7 +275,7 @@ for (var i = 0; i < 100; ++i) {
         </section>
 
         <section>
-          <h2>non-blocking I/O</h2>
+          <h2>non-blocking I/O with streams</h2>
           <pre><code class='language-javascript'>
 // make 100 requests to google.com
 for (var i = 0; i < 100; ++i) {
@@ -228,24 +286,15 @@ for (var i = 0; i < 100; ++i) {
   });
 }
           </code></pre>
-          <strong>non-blocking example, with streams</strong>
           <br>
-          <h3>quite readable, right?</h3>
+          quite readable, right?
         </section>
 
         <section>
           <h2>small core, rich module ecosystem</h2>
           <ul>
-            <li class='fragment'>
-              core contains only the bare essentials,<br>
-              no 'batteries included' mentality in node.js land
-            </li>
-            <li class='fragment'>
-              move everything else into third-party modules
-            </li>
-            <li class='fragment'>
-              small core is good, huge core hampers progress (cf. Python)
-            </li>
+            <li class='fragment'>no batteries included<li>
+            <li class='fragment'>huge core hampers progress (cf. Python)</li>
             <li class='fragment'>
               less maintenance, means I can go home at four :-)
             </li>
@@ -253,11 +302,184 @@ for (var i = 0; i < 100; ++i) {
         </section>
 
         <section>
-          <h2>so what's it good for?</h2>
-          <ul>
-            <li class='fragment'></li>
-          </ul>
+          <h3>an example module: my first chat app</h3>
+          <a href='https://github.com/bnoordhuis/chat-example'>
+            https://github.com/bnoordhuis/chat-example
+          </a>
+          <pre class='term'>
+$ git clone git://github.com/bnoordhuis/chat-example.git
+$ cd chat-example
+$ node run.js
+          </pre>
         </section>
+
+        <section>
+          <h2>create the module</h2>
+          <pre class='term'>
+$ npm init
+name: (chat) chat-example
+version: (0.0.0) 0.0.1
+description: my first chat app
+entry point: (index.js) 
+test command: echo "Real Programmers don't need tests"
+git repository: git://github.com/bnoordhuis/chat-example.git
+keywords: chat chat chat
+author: Ben Noordhuis
+license: (BSD) ISC
+          </pre>
+        </section>
+
+        <section>
+          package.json
+          <pre><code class='language-javascript'>
+{
+  "name": "chat-example",
+  "version": "0.0.1",
+  "description": "my first chat app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Real Programmers don't need tests\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bnoordhuis/chat-example.git"
+  },
+  "keywords": [
+    "chat",
+    "chat",
+    "chat"
+  ],
+  "author": "Ben Noordhuis",
+  "license": "ISC"
+}</code></pre>
+        </section>
+
+        <section>
+          index.js
+          <pre><code class='language-javascript'>
+exports.start = start;
+exports.broadcast = broadcast;
+
+var net = require('net');
+var os = require('os');
+var connections = [];
+
+function start(port) {
+  net.createServer(port, on_connection).listen(port);
+  var address = os.networkInterfaces()['wlan0'][0].address;
+  console.log('Connect with: netcat %s %d', address, port);
+}
+
+function broadcast(msg, skip) {
+  connections.forEach(function(conn) {
+    if (conn !== skip) conn.write(msg);
+  });
+  process.stdout.write(msg);
+}
+          </code></pre>
+        </section>
+
+        <section>
+          <pre><code class='language-javascript'>
+function on_connection(conn) {
+  conn.id = conn.remoteAddress + ':' + conn.remotePort;
+  broadcast(conn.id + ' joined\n');
+  connections.push(conn);
+  conn.on('data', on_client_data)
+  conn.on('close', on_client_exit);
+  conn.on('error', on_client_exit);
+}
+
+function on_client_data(data) {
+  var conn = this;
+  broadcast(conn.id + ' says: ' + data, conn);
+}
+
+function on_client_exit(err) {
+  var conn = this;
+  if (err) console.error(conn.id + ' died: ' + err.message);
+  connections.splice(connections.indexOf(conn)); // remove from list
+  broadcast(conn.id + ' left\n');
+}
+          </code></pre>
+        </section>
+
+        <section>
+          <pre class='term'>
+$ npm publish
+npm <span class='green'>http</span> <span class='purple'>PUT</span> https://registry.npmjs.org/chat-example
+npm <span class='green'>http</span> <span class='purple'>201</span> https://registry.npmjs.org/chat-example
+npm <span class='green'>http</span> <span class='purple'>GET</span> https://registry.npmjs.org/chat-example
+npm <span class='green'>http</span> <span class='purple'>200</span> https://registry.npmjs.org/chat-example
+npm <span class='green'>http</span> <span class='purple'>PUT</span> https://registry.npmjs.org/chat-example/0.0.1/-tag/latest
+npm <span class='green'>http</span> <span class='purple'>201</span> https://registry.npmjs.org/chat-example/0.0.1/-tag/latest
+npm <span class='green'>http</span> <span class='purple'>GET</span> https://registry.npmjs.org/chat-example
+npm <span class='green'>http</span> <span class='purple'>200</span> https://registry.npmjs.org/chat-example
+npm <span class='green'>http</span> <span class='purple'>PUT</span> https://registry.npmjs.org/chat-example/-/chat-example-0.0.1.tgz/-rev/2-68c8a3423827c586277c05311f9b7fb8
+npm <span class='green'>http</span> <span class='purple'>201</span> https://registry.npmjs.org/chat-example/-/chat-example-0.0.1.tgz/-rev/2-68c8a3423827c586277c05311f9b7fb8
++ chat-example@0.0.1
+          </pre>
+        </section>
+
+        <section>
+          <h2>how to use our module?</h2>
+          <pre class='term'>
+$ git checkout -b usage-example -t origin/usage-example
+          </pre>
+        </section>
+
+        <section>
+          package.json
+          <pre><code class='language-javascript'>
+{
+  "name": "usage-example",
+  "version": "0.0.1",
+  "description": "how to use my first chat app",
+  "main": "run.js",
+  "author": "Ben Noordhuis",
+  "license": "ISC",
+  "dependencies": {
+    "chat-example": "0.0.1"
+  }
+}
+          </code></pre>
+        </section>
+
+        <section>
+          run.js
+          <pre><code class='language-javascript'>
+var chat = require('chat-example');
+chat.start(8000);
+          </code></pre>
+        </section>
+
+        <section>
+          <pre class='term'>
+$ npm update
+npm <span class='green'>http</span> <span class='purple'>GET</span> https://registry.npmjs.org/chat-example/0.0.1
+npm <span class='green'>http</span> <span class='purple'>200</span> https://registry.npmjs.org/chat-example/0.0.1
+npm <span class='green'>http</span> <span class='purple'>GET</span> https://registry.npmjs.org/chat-example/-/chat-example-0.0.1.tgz
+npm <span class='green'>http</span> <span class='purple'>200</span> https://registry.npmjs.org/chat-example/-/chat-example-0.0.1.tgz
+npm <span class='green'>http</span> <span class='purple'>GET</span> https://registry.npmjs.org/chat-example/0.0.1
+npm <span class='green'>http</span> <span class='purple'>304</span> https://registry.npmjs.org/chat-example/0.0.1
+chat-example@0.0.1 node_modules/chat-example
+
+$ ls -l node_modules/
+drwxrwxr-x 2 bnoordhuis bnoordhuis 4096 Oct  4 00:03 chat-example
+
+$ node run.js
+Connect with: netcat 192.168.1.6 8000
+          </pre>
+        </section>
+
+        <section>
+          <h1>Try it</h1>
+        </section>
+
+        <section>
+          <h1>Questions?</h1>
+        </section>
+      </div>
     </div>
 
     <aside class='controls'>
@@ -270,17 +492,9 @@ for (var i = 0; i < 100; ++i) {
   </body>
   <script src='lib/js/head.min.js'></script>
   <script src='js/reveal.min.js'></script>
+  <script src='hl/highlight.pack.js'></script>
   <script>
-    Reveal.initialize({
-      theme: 'beige',
-      transition: 'linear',
-      dependencies: [
-        {
-          async: true,
-          src: 'lib/js/highlight.js',
-          callback: function() { window.hljs.initHighlightingOnLoad() }
-        }
-      ]
-    });
+    hljs.initHighlighting();
+    Reveal.initialize({ theme: 'beige', transition: 'linear' });
   </script>
 </html>
