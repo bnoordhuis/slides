@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>node.js - the good, the bad and the ugly</title>
+    <link type='text/css' rel='stylesheet' href='css/main.css'>
+    <link rel='stylesheet' href='css/theme/default.css' id='theme'>
+    <style>
+    .smallish
+    {
+      font-size: 75%;
+    }
+    .small
+    {
+      font-size: 50%;
+    }
+    .warn
+    {
+      font-weight: bold;
+      color: red;
+    }
+    .good
+    {
+      color: green;
+    }
+    .bad
+    {
+      color: red;
+    }
+    </style>
+  </head>
+  <body>
+    <div class='reveal'>
+      <div class='slides'>
+        <section>
+          <h1>node.js</h1>
+          <hr>
+          <h2>the good, the bad and the ugly</h2>
+          <hr>
+          <h3>bringing event-driven programming to the masses since 2009</h3>
+          <span class='small'>
+            by Ben Noordhuis<br>
+            <a href='mailto:info@bnoordhuis.nl'>info@bnoordhuis.nl</a><br>
+            <a href='https://github.com/bnoordhuis'>
+              https://github.com/bnoordhuis
+            </a>
+          </span>
+        </section>
+
+        <section>
+          <h2>about me</h2>
+          <div class='small'>a.k.a. 'who is that guy?'</div>
+          <ul>
+            <li class='fragment'>contributor since early 2010</li>
+            <li class='fragment'>committer since 2011</li>
+            <li class='fragment'>employed by Cloud9</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>a brief history of node.js</h2>
+          <ul>
+            <li class='fragment'>
+              created by Ryan Dahl<br>
+              <div class='small'>
+                <a href='https://github.com/ry'>https://github.com/ry</a>
+                <a href='https://twitter.com/ryah'>https://twitter.com/ryah</a>
+                <br>
+                <img src='img/ryan_dahl.jpg'>
+                &larr; that guy
+              </div>
+            </li>
+
+            <li class='fragment'>
+              smash hit at JSConf 2009<br>
+              <span class='small'>
+                <a href='http://jsconf.eu/2009/video_nodejs_by_ryan_dahl.html'>
+                  http://jsconf.eu/2009/video_nodejs_by_ryan_dahl.html
+                </a>
+              </span>
+            </li>
+
+            <li class='fragment'>
+              maintained by Isaac Schlueter<br>
+              <div class='small'>
+                <a href='https://github.com/isaacs'>
+                  https://github.com/isaacs
+                </a>
+                <a href='https://twitter.com/izs'>https://twitter.com/izs</a>
+                <br>
+                <img src='img/isaac_schlueter.jpg'>
+              </div>
+            </li>
+
+            <li class='fragment'>
+              and others like yours truly
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>so what is node.js?</h2>
+          <div class='small'>(enumeration first, tedious details follow)</div>
+          <ul>
+            <li class='fragment'>server-side javascript</li>
+            <li class='fragment'>non-blocking I/O</li>
+            <li class='fragment'>small core, rich module ecosystem</li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>what does that mean?</h1>
+          <div class='small'>(here come the tedious details)</div>
+        </section>
+
+        <section>
+          <h2>server-side javascript</h2>
+          <ul>
+            <li class='fragment'>
+              incumbent languages are Java, C#, PHP, Python, Ruby, etc.
+            </li>
+            <li class='fragment'>
+              what does node.js bring to the table?<br>
+              <span class='fragment'>
+                one language to rule them all, server and client!
+              </span>
+            </li>
+            <li class='fragment'>
+              not really comparable with
+              <a href='http://en.wikipedia.org/wiki/Netscape_Enterprise_Server'>
+                Netscape Enterprise Server
+              </a>
+              or
+              <a href='http://en.wikipedia.org/wiki/JScript'>
+                MS JScript
+              </a>
+              because of...
+          </ul>
+        </section>
+
+        <section>
+          <h2>non-blocking I/O</h2>
+          <pre><code class='language-javascript'>
+// make 100 requests to google.com
+for (var i = 0; i < 100; ++i) {
+  var conn = net.connect({ host: 'google.com', port: 80 });
+  conn.write('GET / HTTP/0.9\r\n');
+  var data = conn.read();
+  conn.destroy();
+  console.log(data);
+}
+          </code></pre>
+          <strong>blocking example</strong>
+          <div class='small warn'>pseudocode warning</div>
+          <ul>
+            <li><span class='good'>pro:</span> straightforward, simple</li>
+            <li><span class='good'>pro:</span> easy to read</li>
+            <li>
+              <span class='bad'>con:</span> inherently slow, never faster than
+              100 * min_request_time
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>non-blocking I/O</h2>
+          <pre><code class='language-javascript'>
+// make 100 requests to google.com
+for (var i = 0; i < 100; ++i) {
+  // spawn a new process
+  if (fork() == 0) {
+    var conn = net.connect({ host: 'google.com', port: 80 });
+    conn.write('GET / HTTP/0.9\r\n');
+    var data = conn.read();
+    conn.destroy();
+    console.log(data);
+  }
+}
+          </code></pre>
+          <strong>blocking example, pre-fork</strong>
+          <div class='small warn'>pseudocode warning</div>
+          <ul>
+            <li><span class='good'>pro:</span> still pretty straightforward</li>
+            <li><span class='good'>pro:</span> almost as easy to read</li>
+            <li>
+              <span class='bad'>con:</span> processes aren't cheap.<br>
+              100 isn't so bad but what about 1,000s or 10,000s?
+            </li>
+            <li>still, not entirely without merit</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>non-blocking I/O</h2>
+          <pre><code class='language-javascript'>
+// make 100 requests to google.com
+for (var i = 0; i < 100; ++i) {
+  net.connect({ host: 'google.com', port: 80 }, function() {
+    var conn = this;
+    conn.write('GET / HTTP/0.9\r\n', function() {
+      conn.read(function(data) {
+        console.log(data);
+        conn.destroy();
+      });
+    });
+  });
+}
+          </code></pre>
+          <strong>non-blocking example</strong>
+          <ul>
+            <li>
+              <span class='good'>pro:</span> fast, finishes in max_request_time
+            </li>
+            <li>
+              <span class='bad'>con:</span> lots of callbacks
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>non-blocking I/O</h2>
+          <pre><code class='language-javascript'>
+// make 100 requests to google.com
+for (var i = 0; i < 100; ++i) {
+  net.connect({ host: 'google.com', port: 80 }, function() {
+    var conn = this;
+    conn.write('GET / HTTP/0.9\r\n');
+    conn.pipe(process.stdout);
+  });
+}
+          </code></pre>
+          <strong>non-blocking example, with streams</strong>
+          <br>
+          <h3>quite readable, right?</h3>
+        </section>
+
+        <section>
+          <h2>small core, rich module ecosystem</h2>
+          <ul>
+            <li class='fragment'>
+              core contains only the bare essentials,<br>
+              no 'batteries included' mentality in node.js land
+            </li>
+            <li class='fragment'>
+              move everything else into third-party modules
+            </li>
+            <li class='fragment'>
+              small core is good, huge core hampers progress (cf. Python)
+            </li>
+            <li class='fragment'>
+              less maintenance, means I can go home at four :-)
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>so what's it good for?</h2>
+          <ul>
+            <li class='fragment'></li>
+          </ul>
+        </section>
+    </div>
+
+    <aside class='controls'>
+      <a class='left' href='#'>&#x25C4;</a>
+      <a class='right' href='#'>&#x25ba;</a>
+      <a class='up' href='#'>&#x25b2;</a>
+      <a class='down' href='#'>&#x25bc;</a>
+    </aside>
+
+  </body>
+  <script src='lib/js/head.min.js'></script>
+  <script src='js/reveal.min.js'></script>
+  <script>
+    Reveal.initialize({
+      theme: 'beige',
+      transition: 'linear',
+      dependencies: [
+        {
+          async: true,
+          src: 'lib/js/highlight.js',
+          callback: function() { window.hljs.initHighlightingOnLoad() }
+        }
+      ]
+    });
+  </script>
+</html>

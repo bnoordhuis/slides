@@ -1,0 +1,34 @@
+node.js - the good, the bad and the ugly
+
+or:
+
+node.js - bringing event-driven programming to the masses since 2009
+
+Ben does a retrospective on node.js:
+
+ * how and why did node.js get to be?
+ * what has happened along the way?
+ * where are we going?
+
+He then goes on to discuss - possibly in minute detail - the ups and downs of
+programming the node.js way.
+
+ * what problems does node.js solve or try to solve?
+   - how?
+   - why like that and not some other way?
+
+ * what problems does it *not* solve?
+   - can not solve?
+   - does not want to solve?
+
+ * what problems does it introduce?
+   - why?
+   - how do we overcome them? do we overcome them?
+
+ * what are node's main competitors and how does it hold up to them?
+   - similarities and differences between node.js and erlang/otp, twisted,
+     golang, boost.asio, etc.
+   - comparative analysis of the strengths and weaknesses of the languages
+     and frameworks mentioned above, no holds barred, no feelings spared
+
+So many questions! And, time permitting, they will all be answered.
