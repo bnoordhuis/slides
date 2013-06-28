@@ -58,7 +58,7 @@
             </ul>
           </p>
           <aside class="notes">
-          ordered: FIFO, no reordering
+          ordered: FIFO, no reordering unless the user so chooses
           reliable: no dropped segments
           push model: source notifies sink, not other way around
           handle backpressure: don't block on slow producers, don't buffer
@@ -246,7 +246,12 @@ require('net').createServer(broken)
             <li>only have to implement _read()</li>
             <li>size hint is optional</li>
             <li>push chunks to data sink</li>
+            <li>can push to front of queue with unshift()</li>
           </ul>
+          <aside class="notes">
+          unshift() is for consumers pushing back data. If you're frequently
+          unshifting, you should probably rewrite it as a Transform stream
+          </aside>
         </section>
 
         <section>
@@ -328,9 +333,70 @@ require('net').createServer(broken)
           <h2>Transformer</h2>
           <ul>
             <li>only have to implement _transform()</li>
-            <li>can optionall implement _flush()</li>
+            <li>can optionally implement _flush()</li>
           </ul>
           <aside class="notes">_flush() is for emitting trailing data</aside>
+        </section>
+
+        <section>
+          <h2>putting it all together</h2>
+          <pre><code>
+// generate random words, uppercase them and print to std{out,err}
+(new RandomWordStream(8)).pipe(new CapsLockStream)
+                         .pipe(new SpliceStream);
+// okay, not too exciting but there's not enough room on these
+// slides for a more full-fledged example
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>object mode</h2>
+          <pre><code>// produce and consume objects
+function Source(n) {
+  this.__proto__ = Readable.call(this, { objectMode: true });
+  this._count = 0;
+  this._read = function(size) {
+    if (++this._count === n)
+      this.push(null);
+    else
+      this.push({ count: this._count });
+  };
+}
+
+function Sink() {
+  this.__proto__ = Writable.call(this, { objectMode: true });
+  this._write = function(obj, _, done) {
+    console.log(obj);
+    done();
+  };
+}
+
+(new Source(4)).pipe(new Sink);
+          </code></pre>
+          <pre>$ node examples/objectmode.js
+{ count: 1 }
+{ count: 2 }
+{ count: 3 }
+{ count: 4 }</pre>
+        </section>
+
+        <section>
+          <h2>object mode</h2>
+          <ul>
+            <li>lets you produce/consume objects instead of buffers/strings</li>
+            <li>kind of pointless IMO but there it is</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>recap</h2>
+          <ul>
+            <li>Readable, Writable, Transformer</li>
+            <li>easy to use, easy to implement</li>
+            <li>mostly backwards compatible with v0.8</li>
+            <li>objectMode for those who want it</li>
+          </ul>
+          <aside class="notes">easy to use: handles backpressure for you</aside>
         </section>
 
         <section>
@@ -348,7 +414,7 @@ require('net').createServer(broken)
         <section>
           <h2>Math.floor(x / 3) considered harmful</h2>
           <p>or:</p>
-          <h3>friends don't let friends divide by 3</h3>
+          <h3>friends don't let friends do integer division</h3>
         </section>
 
         <section>
@@ -365,7 +431,7 @@ D.Debug.disassemble(f);
           </p>
           <p>
 <pre>$ out/x64.debug/d8 --allow-natives-syntax --expose-debug-as=D \
-                     div3.js 2&gt;&amp;1 | grep -C2 idivl
+                     div3.js 2&gt;&amp;1 | grep -wC2 idivl
 </pre>
 <pre>
 0x29a7c2845d9b    59  b903000000     movl rcx,0x3
@@ -378,7 +444,7 @@ D.Debug.disassemble(f);
 
       <section>
         <h3>idiv is expensive!</h3>
-        <p class="fragment">takes between 26 and <strong>191</strong> CPU cycles</p>
+        <p class="fragment">takes between 26 and <u><strong>191</strong></u> CPU cycles</p>
         <p class="fragment">most instructions only take 1-3 cycles</p>
         <p class="fragment">easily most expensive instruction in everyday use</p>
       </section>
@@ -386,8 +452,18 @@ D.Debug.disassemble(f);
       <section>
         <h3>magic constants to the rescue!</h3>
         <pre><code>function div3(x) { return (x * 0x5556) &gt;&gt; 16 }</code></pre>
+<pre>$ out/x64.debug/d8 --allow-natives-syntax --expose-debug-as=D \
+                     div3.js 2&gt;&amp;1 | grep -wC2 imull
+</pre>
+<pre>
+0x3f9d9a444bba    26  0f851e000000   jnz 62  (0x3f9d9a444bde)
+0x3f9d9a444bc0    32  48c1e820       REX.W shrq rax,32
+<span style="color:green">0x3f9d9a444bc4    36  69c056550000   imull rax,rax,0x5556</span>
+0x3f9d9a444bca    42  0f803b000000   jo 107  (0x3f9d9a444c0b)
+<span style="color:green">0x3f9d9a444bd0    48  c1f810         sarl rax,16</span>
+</pre>
         <ul>
-          <li class="fragment">mul is fast, 1-18 cycles</li>
+          <li class="fragment">mul/imul is fast, 1-18 cycles</li>
           <li class="fragment">
             pro: works for both signed and unsigned division
 <pre><code>div3(100);   // 33
@@ -400,20 +476,50 @@ div3(-100);  // -34</code></pre>
             only accurate for numbers between -32768 and 32767
           </li>
         </ul>
+        <aside class="notes">
+        imul is usually 5 cycles or less.
+
+        imul is almost always faster than mul. Probably most common type of
+        multiplication, hence more optimized by Intel and AMD.
+        </aside>
+      </section>
+
+      <section>
+        <h3>magic constants to the rescue!</h3>
+        <p>executed code conceptually looks like this</p>
+<pre><code>// logical AND with sign extension
+function div3(x) {
+  x *= 0x5556;
+  // pseudo-code warning! -1 &amp; 0xFFFFFFFF == -1 in JS, not 0xFFFFFFFF
+  x &amp;= 0xFFFFFFFF;
+  if (x &amp; 0x80000000) x -= 0x100000000;  // signed number
+  return x &gt;&gt; 16;
+}</code></pre>
+        <p class="fragment">large numbers don't work because of nature of JS numbers</p>
+        <p class="fragment">binary arithmetic only has 32 bits of (signed!) precision.</p>
+        <p class="fragment">
+        multiplying by e.g. 0x55556 and right-shifting 20 bits actually
+        reduces range to -6143 - 6143.
+        </p>
+      </section>
+
+      <section>
+        <h3>can we do better?</h3>
+        <h3 class="fragment">of course!</h3>
       </section>
 
       <section>
         <h3>the shifty approach adds up</h3>
 <pre><code>
 function div3(x) {
-  var t = x &gt;&gt;&gt; 2;
-  t += t &gt;&gt;&gt; 2;
-  t += t &gt;&gt;&gt; 4;
-  t += t &gt;&gt;&gt; 8;
-  t += t &gt;&gt;&gt; 16;
+  var t = x &gt;&gt; 2;
+  t += t &gt;&gt; 2;
+  t += t &gt;&gt; 4;
+  t += t &gt;&gt; 8;
+  t += t &gt;&gt; 16;
   x -= t + t + t;
   x += (x &lt;&lt; 3) + (x &lt;&lt; 1);
-  t += x &gt;&gt;&gt; 5;
+  t += x &gt;&gt; 5;
   return t;
 }
 </code></pre>
@@ -421,8 +527,27 @@ function div3(x) {
           <li class="fragment">pro: fast, only shifts, adds and one sub</li>
           <li class="fragment">pro: works for both signed and unsigned division</li>
           <li class="fragment">pro: works for large numbers (-2147483648 to 2147483647)</li>
+          <li class="fragment">con: only divides by 3</li>
         </ul>
         <aside class="notes">only ~20 cycles, discounting v8 overhead</aside>
+      </section>
+
+      <section>
+<pre><code>// divide by 10 using the same approach
+function div10(x) {
+  var t;
+  x += x &gt;&gt; 31 &amp; 1;
+  t = x &gt;&gt; 1;
+  t += t &gt;&gt; 1;
+  t += t &gt;&gt; 4;
+  t += t &gt;&gt; 8;
+  t += t &gt;&gt; 16;
+  t &gt;&gt;= 3;
+  x -= (t &lt;&lt; 3) + (t &lt;&lt; 1);
+  t += (x + 6) &gt;&gt; 4;
+  return t;
+}
+</code></pre>
       </section>
 
       <section>
@@ -449,10 +574,12 @@ function div3(x) {
         progress: true,
         history: true,
         center: true,
-        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        theme: 'night',
         transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
         // Optional libraries used to extend on reveal.js
         dependencies: [
+          { src: 'socket.io/socket.io.js', async: true },
+          { src: 'plugin/notes-server/client.js', async: true },
           { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
           { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
           { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
